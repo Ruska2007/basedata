@@ -1,0 +1,45 @@
+ruska@ruska-MS-7918:~ $ cd geekbrains/
+ruska@ruska-MS-7918:~/geekbrains $ cd bigdata/
+ruska@ruska-MS-7918:~/geekbrains/bigdata $ cd basedata/
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata (master)*$ cd hw4
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ ls
+'dump_communities_users20-02-2020 06-36.sql'
+'dump_profiles20-02-2020 06-34.sql'
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < 'dump_communities_users20-02-2020 06-36.sql'
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysqldump -u root -p vk > dump_vk+posts_table.sql
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysqldump -u root -p vk user media posts > dump_vk_posts_table.sql
+Enter password: 
+mysqldump: Couldn't find table: "user"
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysqldump -u root -p vk users media posts > dump_vk_posts_table.sql
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysqldump -u root -p vk  > dump_vk.sql
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < dump_filldb_posps.sql
+-su: dump_filldb_posps.sql: Нет такого файла или каталога
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < dump_filldb_posts.sql
+Enter password: 
+
+
+ruska@ruska-MS-7918:~ $ cd geekbrains/
+ruska@ruska-MS-7918:~/geekbrains $ cd bigdata/
+ruska@ruska-MS-7918:~/geekbrains/bigdata $ cd basedata/
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata (master)*$ cd hw4
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ ls
+ 1.png                                         likes_communities.sql
+'dump_communities_users20-02-2020 06-36.sql'   likes_media.sql
+ dump_filldb_posts.sql                         likes_messages.sql
+'dump_profiles20-02-2020 06-34.sql'            likes_posts.sql
+ dump_vk_posts_table.sql                       my_terminal_code.txt
+ dump_vk.sql
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < likes_communities.sql 
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < likes_media.sql 
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < likes_messages.sql 
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ mysql -u root -p vk < likes_posts.sql 
+Enter password: 
+ruska@ruska-MS-7918:~/geekbrains/bigdata/basedata/hw4 (master)*$ 
+
