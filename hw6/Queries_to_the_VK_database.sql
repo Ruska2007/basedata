@@ -211,17 +211,17 @@ SELECT CONCAT(first_name, ' ', last_name) AS fullname
 -- ************************************* Задание 2 *****************************
 -- Подсчитать общее количество лайков, которые получили 10 самых молодых пользователей.
 
+ 
 -- Сделал временную таблицу 10 самыхмолодых пользователей
 DROP TABLE IF EXISTS young;
-CREATE TEMPORARY TABLE young   
+CREATE TEMPORARY TABLE young;   
 SELECT id, (SELECT birthdate FROM profiles WHERE user_id = users.id) birthdate
 	FROM users
 	ORDER BY birthdate DESC LIMIT 10; 
-
--- Далее хотел спомощью UNION ALL объеденить работающие по одиночке запросы. Но UNION не поддерживает переоткрытие таблицы
--- Ошибка SQL Error [1137] [HY000]: Can't reopen table: 'young'
--- Ломал голову по всякому, не хватило серого вещества.
-
+/*	
+ * Мой вариант, который я не довел до ума, да и задачу не так понял, думал нужно посчитать все лайки поставленные юзеру, включая
+ * его контент.
+ 
 SELECT target_id, COUNT(target_id) 
 	FROM likes WHERE target_id IN (SELECT id FROM media WHERE user_id = (SELECT id FROM young WHERE user_id = young.id))
     AND target_type_id IN (SELECT id FROM target_types WHERE name = 'media')
@@ -236,16 +236,54 @@ UNION ALL
 	FROM likes WHERE target_id IN (SELECT id FROM posts WHERE user_id = (SELECT id FROM young WHERE user_id = young.id))
     AND target_type_id IN (SELECT id FROM target_types WHERE name = 'messages')
     GROUP BY target_id; 
+*/
+ 
+-- Варианты рассмотренные на след. уроке
+SELECT SUM(likes_per_user) AS likes_total FROM (
+SELECT COUNT(*) AS likes_per_user FROM likes 
+	WHERE target_type_id = 2 
+	AND target_id IN (SELECT * FROM 
+		(SELECT user_id FROM profiles ORDER BY birthdate DESC LIMIT 10)
+    AS sorted_profiles)
+    GROUP BY target_id
+) AS counter_likes;  
+ 
+-- другой вариант
+SELECT SUM(likes_total) FROM 
+(
+	SELECT (SELECT COUNT(*) FROM likes 
+	WHERE target_id = profiles.user_id AND target_type_id = 2) AS likes_total
+	FROM profiles ORDER BY birthdate DESC LIMIT 10
+) AS user_likes; 
+ 
 
 -- ************************************* Задание 3 *****************************
 -- Определить кто больше поставил лайков (всего) - мужчины или женщины?
 
-SELECT user_id FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE gender = 'm') GROUP BY user_id ORDER BY user_id;
+-- SELECT user_id FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE gender = 'm') GROUP BY user_id ORDER BY user_id;
 
-SELECT user_id FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE gender = 'f') GROUP BY user_id ORDER BY user_id;
+-- SELECT user_id FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE gender = 'f') GROUP BY user_id ORDER BY user_id;
 
--- 26 мужчин, 32 женщины
+SELECT COUNT(user_id) FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE gender = 'm') ORDER BY user_id;
 
+SELECT COUNT(user_id) FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE gender = 'f') ORDER BY user_id;
+
+-- 44 мужчин, 56 женщины
+
+SELECT 
+	(CASE(gender)
+	WHEN 'm' THEN 'man'
+	WHEN 'f' THEN 'woman'
+	END) AS gender, 
+	COUNT(*) as likes_count 
+	FROM (
+	SELECT 
+	user_id as user, 
+	(SELECT gender FROM profiles WHERE user_id = user) as gender 
+	FROM likes) dummy_table 
+GROUP BY gender
+ORDER BY likes_count DESC
+LIMIT 1;
 
 -- ************************************* Задание 4 *****************************
 -- Найти 10 пользователей, которые проявляют наименьшую активность в использовании социальной сети.
@@ -254,9 +292,17 @@ SELECT user_id FROM likes WHERE user_id IN (SELECT user_id FROM profiles WHERE g
 SELECT * FROM likes;
 
 SELECT user_id, COUNT(*) AS likes FROM likes 
-    GROUP BY user_id ORDER BY likes DESC LIMIT 10;
+    GROUP BY user_id ORDER BY likes LIMIT 10;
 
-
+-- Версия, озвученная на уроке 
+SELECT CONCAT(first_name, ' ', last_name) AS user, 
+	(SELECT COUNT(*) FROM likes WHERE likes.user_id = users.id) + 
+	(SELECT COUNT(*) FROM media WHERE media.user_id = users.id) + 
+	(SELECT COUNT(*) FROM messages WHERE messages.from_user_id = users.id) 
+	AS overall_activity 
+	FROM users
+	ORDER BY overall_activity
+	LIMIT 10;
 
 
 
