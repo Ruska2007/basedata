@@ -290,8 +290,8 @@ SELECT * FROM flights;
 
 SELECT f.id, c.name AS 'Из' FROM flights f JOIN cities c ON (`from` = c.label) ORDER BY f.id;  
 
--- Запрос ниже работает, но показыват пустую таблицу, причину не могу понять.
-SELECT f.id, c.name AS 'Из', `to` AS 'В' FROM flights f JOIN cities c ON (`from` = c.label AND `to` = c.label) ORDER BY f.id;   
+-- Запрос ниже работает, но показыват пустую таблицу
+SELECT f.id, c.name AS 'Из', c.name AS 'В' FROM flights f JOIN cities c ON (`from` = c.label AND `to` = c.label) ORDER BY f.id;   
 
 
  
