@@ -190,7 +190,7 @@ WHERE
 /* Задание 5: (по желанию) Из таблицы catalogs извлекаются записи при помощи запроса. SELECT * FROM catalogs WHERE id IN (5, 1, 2); 
  * Отсортируйте записи в порядке, заданном в списке IN.
 */ 
- 
+SELECT * FROM products;
 DESCRIBE catalogs;
 SELECT * FROM catalogs;
 SELECT * FROM catalogs WHERE id IN (5, 1, 2) ORDER BY id = 2, id DESC;
@@ -229,6 +229,69 @@ SELECT * FROM value;
 
 SELECT exp(SUM(log(value))) FROM value; 
 
+-- *********************************************************************************************************
+-- ********************************************* ДЗ к уроку № 7 ********************************************
+-- *********************************************************************************************************
+
+-- Задание 1: Составьте список пользователей users, которые осуществили хотя бы один заказ orders в интернет магазине.
+
+USE shop;
+SHOW TABLES;
+SELECT * FROM orders;
+SELECT * FROM users;
+
+INSERT INTO orders (user_id) SELECT (ROUND(RAND()*(12-1)+1)) FROM users LIMIT 12; 	
+
+SELECT u.name FROM users AS u JOIN orders AS o WHERE o.user_id = u.id GROUP BY user_id;
+
+-- Задание 2: Выведите список товаров products и разделов catalogs, который соответствует товару.
+
+SELECT * FROM products;
+SELECT * FROM catalogs;
+
+SELECT p.name AS 'товар', c.name AS 'каталог' FROM products p JOIN catalogs c WHERE p.catalog_id = c.id;
+
+-- Задание 3: (по желанию) Пусть имеется таблица рейсов flights (id, from, to) и таблица городов cities (label, name). 
+-- Поля from, to и label содержат английские названия городов, поле name — русское. 
+-- Выведите список рейсов flights с русскими названиями городов.
+
+DROP TABLE IF EXISTS cities;
+CREATE TEMPORARY TABLE cities 
+(
+	label VARCHAR(100) NOT NULL,
+	name VARCHAR(100) NOT NULL
+);
+
+INSERT INTO cities VALUES
+	('moscow', 'Москва'),
+	('irkutsk', 'Иркутск'),
+	('novgorod', 'Новгород'),
+	('kazan', 'Казань'),
+	('omsk', 'Омск');
+
+SELECT * FROM cities;
+
+DROP TABLE IF EXISTS flights;
+CREATE TEMPORARY TABLE flights 
+(
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	`from` VARCHAR(100) NOT NULL,
+	`to` VARCHAR(100) NOT NULL
+);
+
+INSERT INTO flights (`from`, `to`) VALUES
+	('moscow', 'omsk'),
+	('novgorod', 'kazan'),
+	('irkutsk', 'moscow'),
+	('omsk', 'irkutsk'),
+	('moscow', 'kazan');
+
+SELECT * FROM flights;
+
+SELECT f.id, c.name AS 'Из' FROM flights f JOIN cities c ON (`from` = c.label) ORDER BY f.id;  
+
+-- Запрос ниже работает, но показыват пустую таблицу, причину не могу понять.
+SELECT f.id, c.name AS 'Из', `to` AS 'В' FROM flights f JOIN cities c ON (`from` = c.label AND `to` = c.label) ORDER BY f.id;   
 
 
  
