@@ -120,7 +120,7 @@ INSERT INTO communities VALUES (2, 'Data base course');
 INSERT INTO communities VALUES (3, 'Viktor Schupochenko is cool teacher');
 INSERT INTO communities VALUES (4, 'Rustam Khaitov is cool student');
 INSERT INTO communities VALUES (5, 'All students at course are awesome');
-INSERT INTO communities VALUES (6, 'I\'am a God of Data base');
+INSERT INTO communities VALUES (6, 'I am a God of Data base');
 INSERT INTO communities VALUES (7, 'msql is my life');
 INSERT INTO communities VALUES (8, 'I think I need a doctor');
 INSERT INTO communities VALUES (9, 'When will the communities names end?');
@@ -287,5 +287,117 @@ SELECT * FROM likes_communities;
 -- **************** Выбор сервиса, который будет основой для курсовой работы. ***************
 
 -- База данных на основе сервиса для трудоустройства HeadHunter.
+
+-- *******************************************************************************************
+-- *******************************************************************************************
+-- *******************************************************************************************
+-- *******************************************************************************************
+-- *******************************************************************************************
+
+-- **************************************** Урок 6 *******************************************
+
+DESCRIBE posts;
+SELECT * FROM posts;
+
+ /* Может я не прав конечно, но как мне кажется так логичнее и правдоподобнее:  
+ *  Добавляем случаи когда постер может быть либо без тела либо без названия. 
+ *  !!! Но должны отсутствовать случаи когда и то и другое NULL, но как это сделать я не знаю пока.
+ */ 
+
+ALTER TABLE posts MODIFY head VARCHAR(255);
+UPDATE posts SET head = NULL WHERE id IN (3, 86, 54, 7, 97, 74, 28, 58, 2, 67, 60, 47, 88, 55, 22);
+ALTER TABLE posts MODIFY body MEDIUMTEXT;
+UPDATE posts SET body = NULL WHERE id IN (6, 8, 45, 9, 79, 47, 82, 85, 4, 76, 62, 59, 66, 56, 11);
+
+ALTER TABLE posts MODIFY media_id INT UNSIGNED;
+UPDATE posts SET media_id = NULL;
+
+UPDATE posts SET media_id = 
+	(SELECT id FROM media WHERE media.user_id = posts.user_id LIMIT 1)
+	WHERE id IN (1, 34, 56, 67, 88, 9 ,26, 78, 45, 18, 55);
+SELECT * FROM posts WHERE media_id IS NOT NULL;
+
+-- Привязка фотографии к профилю
+
+DESCRIBE profiles;
+SELECT * FROM profiles;
+SELECT * FROM media_types;
+
+UPDATE profiles SET photo_id =
+	(SELECT id FROM media 
+		WHERE media.user_id = profiles.user_id 
+			AND media.media_type_id = 1 LIMIT 1);
+
+-- Исправление номеров телефона
+
+SELECT * FROM users;
+ALTER TABLE users MODIFY phone VARCHAR(15) UNIQUE;
+UPDATE users SET phone = NULL;
+
+UPDATE users SET phone = 
+	(SELECT CONCAT ('+7-', CONCAT_WS('-', 
+	FLOOR(100 + (RAND() * 899)), 
+	FLOOR(100 + (RAND() * 899)), 
+	FLOOR(1000 + (RAND() * 8999))))
+	);
+
+-- Рассмотрим заполнение user_id для profiles 
+
+DESCRIBE profiles;
+SELECT * FROM profiles;
+
+-- В моем случае у меня все user_id в порядке
+
+-- Далее решаем задачу с Likes
+-- 1. Удаляем предыдущее решение с Likes
+
+DROP TABLE likes_media;
+DROP TABLE likes_posts;
+DROP TABLE likes_messages;
+DROP TABLE likes_communities;
+
+SHOW TABLES;
+
+-- 2. Создаем новое решение Likes
+
+DROP TABLE IF EXISTS likes;
+CREATE TABLE likes (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  target_id INT UNSIGNED NOT NULL,
+  target_type_id INT UNSIGNED NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица типов лайков
+DROP TABLE IF EXISTS target_types;
+CREATE TABLE target_types (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO target_types (name) VALUES 
+  ('messages'),
+  ('users'),
+  ('media'),
+  ('posts');
+
+-- Заполняем лайки
+INSERT INTO likes 
+  SELECT 
+    id, 
+    FLOOR(1 + (RAND() * 100)), 
+    FLOOR(1 + (RAND() * 100)),
+    FLOOR(1 + (RAND() * 4)),
+    CURRENT_TIMESTAMP 
+  FROM messages;
+
+SELECT * FROM likes LIMIT 10;
+
+TEMP
+
+   
+
 
 

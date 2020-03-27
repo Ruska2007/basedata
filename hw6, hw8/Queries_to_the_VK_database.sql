@@ -270,6 +270,7 @@ SELECT COUNT(user_id) FROM likes WHERE user_id IN (SELECT user_id FROM profiles 
 
 -- 44 мужчин, 56 женщины
 
+-- Версия, озвученная на уроке
 SELECT 
 	(CASE(gender)
 	WHEN 'm' THEN 'man'
@@ -305,56 +306,192 @@ SELECT CONCAT(first_name, ' ', last_name) AS user,
 	LIMIT 10;
 
 
+-- ***********************************************************************************************************
+-- ********************************************* Урок №8 *****************************************************
+-- ***********************************************************************************************************
+
+-- Задание 1. Добавить необходимые внешние ключи для всех таблиц базы данных vk (приложить команды).
+
+SHOW TABLES;
+DESC profiles;
+
+ALTER TABLE profiles 
+	ADD CONSTRAINT profiles_user_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id)
+		ON DELETE CASCADE,
+	ADD CONSTRAINT profiles_photo_id_fk
+	FOREIGN KEY (photo_id) REFERENCES media(id)
+		ON DELETE SET NULL;
+	
+DESC messages;
+
+ALTER TABLE messages 
+	ADD CONSTRAINT messages_from_user_id_fk
+	FOREIGN KEY (from_user_id) REFERENCES users(id);
+ALTER TABLE messages 
+	ADD CONSTRAINT messages_to_user_id_fk
+	FOREIGN KEY (to_user_id) REFERENCES users(id);
+ALTER TABLE messages 
+	ADD CONSTRAINT messages_to_community_id_fk
+	FOREIGN KEY (to_community_id) REFERENCES communities(id)
+		ON DELETE SET NULL;
+
+DESC communities;
+DESC communities_users;
+
+ALTER TABLE communities_users 
+	ADD CONSTRAINT communities_users_community_id_fk
+	FOREIGN KEY (community_id) REFERENCES communities(id)
+		ON DELETE CASCADE;
+ALTER TABLE communities_users 
+	ADD CONSTRAINT communities_users_user_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id)
+		ON DELETE CASCADE;
+
+DESC friendship;
+DESC friendship_statuses;
+
+ALTER TABLE friendship 
+	ADD CONSTRAINT friendship_users_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id);
+
+ALTER TABLE friendship 							-- Удалил, забыл ON DELETE
+	DROP CONSTRAINT friendship_users_id_fk;
+
+ALTER TABLE friendship 
+	ADD CONSTRAINT friendship_users_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id)
+		ON DELETE CASCADE;
+
+ALTER TABLE friendship 
+	ADD CONSTRAINT friendship_friend_id_fk
+	FOREIGN KEY (friend_id) REFERENCES users(id)
+		ON DELETE CASCADE;
+	
+ALTER TABLE friendship 
+	ADD CONSTRAINT friendship_friendship_status_id_fk
+	FOREIGN KEY (friendship_status_id) REFERENCES friendship_statuses(id)
+		ON DELETE RESTRICT;
+
+DESC likes;
+DESC target_types;
+SELECT * FROM target_types;
+
+ALTER TABLE likes 							-- Добавил возможность user_id принимать значение NULL
+	MODIFY user_id INT UNSIGNED;
+
+ALTER TABLE likes 
+	ADD CONSTRAINT likes_user_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id)
+		ON DELETE SET NULL;
+	
+ALTER TABLE likes 
+	ADD CONSTRAINT likes_target_type_id_fk
+	FOREIGN KEY (target_type_id) REFERENCES target_types(id)
+		ON DELETE RESTRICT;
+
+ALTER TABLE likes 
+	ADD CONSTRAINT likes_target_id_messages_fk
+	FOREIGN KEY (target_id) REFERENCES messages(id)
+		ON DELETE CASCADE;
+
+ALTER TABLE likes 
+	ADD CONSTRAINT likes_target_id_users_fk
+	FOREIGN KEY (target_id) REFERENCES users(id) 
+		ON DELETE CASCADE;
+	
+ALTER TABLE likes 
+	ADD CONSTRAINT likes_target_id_media_fk
+	FOREIGN KEY (target_id) REFERENCES media(id) 
+		ON DELETE CASCADE;	
+	
+ALTER TABLE likes 
+	ADD CONSTRAINT likes_target_id_posts_fk
+	FOREIGN KEY (target_id) REFERENCES posts(id) 
+		ON DELETE CASCADE;	 
+	
+DESC media;
+DESC media_types;
+
+ALTER TABLE media 
+	ADD CONSTRAINT media_media_type_id_fk
+	FOREIGN KEY (media_type_id) REFERENCES media_types(id)
+		ON DELETE RESTRICT;
+ALTER TABLE media 
+	ADD CONSTRAINT media_user_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id);
+
+DESC posts;
+
+ALTER TABLE posts 
+	ADD CONSTRAINT posts_media_id_fk
+	FOREIGN KEY (media_id) REFERENCES media(id)
+		ON DELETE SET NULL;
+
+ALTER TABLE posts 							-- Добавил возможность user_id принимать значение NULL
+	MODIFY user_id INT UNSIGNED;
+
+ALTER TABLE posts
+	ADD CONSTRAINT posts_user_id_fk
+	FOREIGN KEY (user_id) REFERENCES users(id)
+		ON DELETE SET NULL;
+
+-- Задание 2. По созданным связям создать ER диаграмму, используя Dbeaver (приложить графический файл к ДЗ).
+
+-- Задание 3. Переписать запросы, заданые к ДЗ урока 6 с использованием JOIN (три запроса).
+
+-- Подсчитать общее количество лайков, которые получили 10 самых молодых пользователей.
 
 
+SELECT * FROM likes;
+SELECT * FROM profiles;
+SELECT * FROM target_types;
+SELECT * FROM users;
 
+-- Никак не получилось прикрутить таблицу target_types
+SELECT SUM(likes_per_user) AS likes_total FROM (SELECT COUNT(DISTINCT likes.id) AS likes_per_user
+	FROM profiles 
+		LEFT JOIN likes 
+			ON profiles.user_id = likes.target_id  
+		-- LEFT JOIN target_types 
+			-- ON target_types.id = likes.target_id 
+		AND target_type_id = 2 -- target_types.name = 'users'
+	GROUP BY profiles.user_id 
+	ORDER BY birthdate DESC LIMIT 10) AS 10_users;
 
+-- Определить кто больше поставил лайков (всего) - мужчины или женщины?
 
+SELECT * FROM likes;
+SELECT * FROM profiles;
 
+SELECT (CASE(gender)
+	WHEN 'm' THEN 'man'
+	WHEN 'f' THEN 'woman'
+	END) AS gender,
+	COUNT(likes.user_id) AS likes_count FROM likes
+	LEFT JOIN profiles 
+		ON profiles.user_id = likes.user_id 
+	GROUP BY gender
+ORDER BY likes_count DESC
+LIMIT 1;
 
+-- Найти 10 пользователей, которые проявляют наименьшую активность в использовании социальной сети.
 
+SELECT * FROM users;
+SELECT * FROM likes;
+SELECT * FROM media;
 
+SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SELECT users.id, CONCAT(users.first_name, ' ', users.last_name) AS name, 
+(COUNT(DISTINCT likes.id) + COUNT(DISTINCT media.id) + COUNT(DISTINCT messages.id)) AS overall_activity  
+	FROM users 
+		LEFT JOIN likes
+			ON likes.user_id = users.id
+		LEFT JOIN media 
+			ON media.user_id = users.id
+		LEFT JOIN messages 
+			ON messages.from_user_id = users.id
+    GROUP BY users.id ORDER BY overall_activity LIMIT 10;
 
 

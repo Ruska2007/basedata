@@ -293,5 +293,16 @@ SELECT f.id, c.name AS 'Из' FROM flights f JOIN cities c ON (`from` = c.label)
 -- Запрос ниже работает, но показыват пустую таблицу
 SELECT f.id, c.name AS 'Из', c.name AS 'В' FROM flights f JOIN cities c ON (`from` = c.label AND `to` = c.label) ORDER BY f.id;   
 
+-- Решение озвученное на уроке. Но так и не запустилось на моей машине. 
+-- Ошибка: SQL Error [1137] [HY000]: Can't reopen table: 'cities_from' 
+SELECT
+  f.id,
+  cities_from.name AS `from`,
+  cities_to.name AS `to`
+FROM flights AS f
+  LEFT JOIN cities AS cities_from
+    ON f.from = cities_from.label
+  LEFT JOIN cities AS cities_to
+    ON f.to = cities_to.label;
 
  
